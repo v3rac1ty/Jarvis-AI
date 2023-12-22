@@ -5,7 +5,7 @@ import openai
 import speech_recognition as sr
 
 
-API_KEY = "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"
+API_KEY = "your-api-key-here"
 
 lang='en'
 exitProg = False;
