@@ -1,5 +1,3 @@
-import os
-import time
 import pyaudio
 import playsound
 from gtts import gTTS
@@ -7,7 +5,7 @@ import openai
 import speech_recognition as sr
 
 
-API_KEY = "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"
+API_KEY = "insert your API key here"
 
 lang='en'
 exitProg = False;
@@ -30,7 +28,7 @@ while True:
                         model = "gpt-3.5-turbo", 
                         messages = [{"role": "user", "content": said}])
                     text = completion['choices'][0].message.content
-                    speech = gTTS(text=text, lang=lang, slow=False, tld="")
+                    speech = gTTS(text=text, lang=lang, slow=False, tld="co.uk")
                     speech.save("output.mp3")
                     playsound.playsound("output.mp3")
             except Exception:
@@ -39,6 +37,8 @@ while True:
                 exitProg = True
 
         return said
-    if exitProg==False:
+    
+    if exitProg:
         break
+
     get_audio()
