@@ -39,6 +39,6 @@ while True:
                 exitProg = True
 
         return said
-    if exitProg==False:
+    if exitProg:
         break
     get_audio()
