@@ -9,3 +9,5 @@ Jarvis AI Assistant is an intelligent and voice-enabled personal assistant desig
 - **GPT-Powered Responses:** Process user queries using cutting-edge GPT technology to generate contextually relevant and human-like responses.
 
 - **Streamlined Interaction:** Achieve an end-to-end voice interaction cycle for a fluid and user-friendly experience.
+
+- **Internet Access:** Seamlessly access the internet to provide users with up-to-date and relevant information.
