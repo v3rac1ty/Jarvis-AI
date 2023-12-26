@@ -1,44 +1,72 @@
-import pyaudio
-import playsound
-from gtts import gTTS
+import os
 import openai
 import speech_recognition as sr
+from gtts import gTTS
+import playsound
+import requests
 
+# Set your OpenAI GPT-3.5 API key
+openai.api_key = os.environ["OPENAI"]
 
-API_KEY = "your-api-key-here"
+def recognize_speech():
+    recognizer = sr.Recognizer()
 
-lang='en'
-exitProg = False;
+    with sr.Microphone() as source:
+        print("Say something:")
+        audio = recognizer.listen(source)
 
-openai.api_key = API_KEY
+    try:
+        text = recognizer.recognize_google(audio)
+        print("You said:", text)
+        return text
+    except sr.UnknownValueError:
+        print("Speech recognition could not understand audio")
+        return None
+    except sr.RequestError as e:
+        print("Could not request results from Google Speech Recognition service; {0}".format(e))
+        return None
 
-while True:
-    def get_audio():
-        r = sr.Recognizer()
-        with sr.Microphone() as source:
-            audio = r.listen(source)
-            input = ""
+def get_gpt_response(prompt):
+    response = openai.Completion.create(
+        model="gpt-3.5-turbo",
+        prompt=prompt,
+        temperature=0.7,
+        max_tokens=150,
+        n=1,
+        stop=None
+    )
+    return response.choices[0].text.strip()
 
-            try:
-                input = r.recognize_google(audio)
-                print(input)
+def speak(text):
+    tts = gTTS(text=text, lang='en')
+    tts.save('output.mp3')
+    playsound.playsound('output.mp3')
+    os.remove('output.mp3')
 
-                if "Jarvis" in input:
-                    completion = openai.ChatCompletion.create(
-                        model = "gpt-3.5-turbo", 
-                        messages = [{"role": "user", "content": input}])
-                    text = completion['choices'][0].message.content
-                    speech = gTTS(text=text, lang=lang, slow=False, tld="co.uk")
-                    speech.save("output.mp3")
-                    playsound.playsound("output.mp3")
-                    if "shut down" in input:
-                        exitProg = True
-            except Exception:
-                print("Error")
+def make_internet_query(query):
+    # Querying DuckDuckGo's API
+    base_url = "https://api.duckduckgo.com/"
+    params = {'q': query, 'format': 'json'}
+    response = requests.get(base_url, params=params)
+    data = response.json()
+    if 'Abstract' in data:
+        return data['Abstract']
+    else:
+        return "No information found."
 
-        return input
-    
-    if exitProg:
-        break
+if __name__ == "__main__":
+    while True:
+        user_input = recognize_speech()
 
-    get_audio()
+        if user_input:
+            gpt_input = f"You said: {user_input}"
+            gpt_response = get_gpt_response(gpt_input)
+            print("Jarvis:", gpt_response)
+            speak(gpt_response)
+
+            # Additional functionality to make internet query
+            if "search" in user_input.lower():
+                query = user_input.lower().replace("search", "").strip()
+                search_result = make_internet_query(query)
+                print("Search Result:", search_result)
+                speak(search_result)
