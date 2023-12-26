@@ -31,7 +31,7 @@ def get_gpt_response(prompt):
         model="gpt-3.5-turbo",
         prompt=prompt,
         temperature=0.7,
-        max_tokens=150,
+        max_tokens=500,
         n=1,
         stop=None
     )
