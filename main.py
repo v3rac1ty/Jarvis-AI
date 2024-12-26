@@ -4,6 +4,8 @@ import speech_recognition as sr
 from gtts import gTTS
 import playsound
 import requests
+import tkinter as tk
+from tkinter import scrolledtext
 
 # Set your OpenAI GPT-3.5 API key
 openai.api_key = os.environ["OPENAI"]
@@ -57,23 +59,41 @@ class InternetQuery:
         else:
             return "No information found."
 
+class JarvisGUI:
+    def __init__(self, root, recognizer, gpt, tts, net_query):
+        self.root = root
+        self.recognizer = recognizer
+        self.gpt = gpt
+        self.tts = tts
+        self.net_query = net_query
+
+        self.root.title("Jarvis GUI")
+        self.text_area = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=50, height=15)
+        self.text_area.pack(padx=10, pady=10)
+
+        speak_button = tk.Button(root, text="Speak", command=self.run_jarvis)
+        speak_button.pack(pady=5)
+
+    def run_jarvis(self):
+        user_input = self.recognizer.recognize_speech()
+        if not user_input:
+            return
+        gpt_input = f"You said: {user_input}"
+        gpt_response = self.gpt.generate_response(gpt_input)
+        self.text_area.insert(tk.END, f"You: {user_input}\nJarvis: {gpt_response}\n\n")
+        self.tts.speak(gpt_response)
+        if "search" in user_input.lower():
+            query = user_input.lower().replace("search", "").strip()
+            search_result = self.net_query.search(query)
+            self.text_area.insert(tk.END, f"Search Result: {search_result}\n\n")
+            self.tts.speak(search_result)
+
 if __name__ == "__main__":
     recognizer = SpeechRecognizer()
     gpt_client = GPTClient()
     tts = TTSEngine()
     net_query = InternetQuery()
 
-    while True:
-        user_input = recognizer.recognize_speech()
-
-        if user_input:
-            gpt_input = f"You said: {user_input}"
-            gpt_response = gpt_client.generate_response(gpt_input)
-            print("Jarvis:", gpt_response)
-            tts.speak(gpt_response)
-
-            if "search" in user_input.lower():
-                query = user_input.lower().replace("search", "").strip()
-                search_result = net_query.search(query)
-                print("Search Result:", search_result)
-                tts.speak(search_result)
+    root = tk.Tk()
+    gui = JarvisGUI(root, recognizer, gpt_client, tts, net_query)
+    root.mainloop()
